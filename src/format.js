@@ -1,5 +1,10 @@
 const SOURCE_LABELS = {
+  adorocinema: 'AdoroCinema',
+  allocine: 'AlloCiné',
   apple: 'Apple TV',
+  beyazperde: 'Beyazperde',
+  filmstarts: 'Filmstarts',
+  sensacine: 'SensaCine',
   filmweb: 'Filmweb',
   plex: 'Plex',
   rottentomatoes: 'Rotten Tomatoes',
@@ -15,6 +20,7 @@ const LABELS = {
   fr: { trailer: 'Bande-annonce', teaser: 'Teaser' },
   es: { trailer: 'Tráiler', teaser: 'Teaser' },
   pt: { trailer: 'Trailer', teaser: 'Teaser' },
+  tr: { trailer: 'Fragman', teaser: 'Teaser' },
   default: { trailer: 'Trailer', teaser: 'Teaser' }
 };
 

@@ -1,4 +1,15 @@
-const SOURCE_PRIORITY = { filmweb: 0, apple: 1, plex: 2, rottentomatoes: 3, youtube: 8 };
+const SOURCE_PRIORITY = {
+  filmweb: 0,
+  allocine: 0,
+  filmstarts: 0,
+  sensacine: 0,
+  adorocinema: 0,
+  beyazperde: 0,
+  apple: 1,
+  plex: 2,
+  rottentomatoes: 3,
+  youtube: 8
+};
 const KIND_PRIORITY = { trailer: 0, teaser: 1 };
 const DURATION_TOLERANCE_SEC = 1;
 
@@ -36,6 +47,7 @@ export function selectTrailers(trailers, wanted) {
   return dedupe(trailers.filter(trailer => languageRank.has(trailer.lang))).sort(
     (a, b) =>
       languageRank.get(a.lang) - languageRank.get(b.lang) ||
+      Number(a.source === 'youtube') - Number(b.source === 'youtube') ||
       (b.height ?? 0) - (a.height ?? 0) ||
       kindRank(a) - kindRank(b) ||
       sourceRank(a) - sourceRank(b) ||

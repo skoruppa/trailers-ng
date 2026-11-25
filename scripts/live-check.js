@@ -99,7 +99,7 @@ function problems(streams, trailers) {
 async function checkTitle([type, imdbId, name]) {
   let idsError = null;
   const ref = parseMediaId(imdbId, type);
-  const ids = await cached(`ids:v3:${type}:${ref.key}`, 3600, () => lookupIds(fetcher, ref, type)).catch(error => {
+  const ids = await cached(`ids:v4:${type}:${ref.key}`, 3600, () => lookupIds(fetcher, ref, type)).catch(error => {
     idsError = String(error);
     return null;
   });

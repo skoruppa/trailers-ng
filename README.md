@@ -1,6 +1,6 @@
 # Trailers NG
 
-A trailer provider addon for Stremio-compatible apps. It returns direct trailer video files (MP4 and HLS) as Stream Objects in `meta.trailerStreams`, with a title, language, source and thumbnail for each trailer, best quality first. YouTube trailers are added only as a fallback.
+A trailer provider addon for Stremio-compatible apps. It returns direct trailer video files (MP4, WebM and HLS) as Stream Objects in `meta.trailerStreams`, with a title, language, source and thumbnail for each trailer, best quality first. YouTube trailers are added only as a fallback.
 
 It is meant to be used as a trailer source for a metadata addon such as AIOMetadata, which merges these trailers into its own metadata. The addon itself returns no other metadata.
 
@@ -22,8 +22,9 @@ It is meant to be used as a trailer source for a metadata addon such as AIOMetad
 | Rotten Tomatoes (Fandango) | English | Titles, descriptions, thumbnails, durations |
 | Apple TV | Depends on the title | Uses the storefront of the chosen language. Some trailers carry many dubbed audio tracks; the addon serves a playlist with only the chosen language |
 | Filmweb | Polish | Polish trailers |
+| AlloCiné, Filmstarts, SensaCine, AdoroCinema, Beyazperde | French, German, Spanish, Portuguese, Turkish | The Webedia sites share one id. Dubbed and subtitled versions count as the site's language, original versions as the film's original language. Movies only |
 
-Titles are matched by IMDb id (`tt…`) or TMDB id (`tmdb:…`); TMDB ids are mapped through Wikidata. Note that AIOMetadata only asks trailer addons by IMDb id. Plex is queried by IMDb id directly; the ids of the other services come from Wikidata (through Wikidata Hub and `Special:EntityData`). Wikidata requests go through a queue: at most 2 at a time and 4 per second, and a request that waits longer than 4 seconds is dropped for that lookup.
+Titles are matched by IMDb id (`tt…`) or TMDB id (`tmdb:…`); TMDB ids are mapped through Wikidata. Note that AIOMetadata only asks trailer addons by IMDb id. YouTube trailers are added after the direct files, at most four per language. Plex is queried by IMDb id directly; the ids of the other services come from Wikidata (through Wikidata Hub and `Special:EntityData`). Wikidata requests go through a queue: at most 2 at a time and 4 per second, and a request that waits longer than 4 seconds is dropped for that lookup.
 
 Resolved ids are cached for a year when all of them were found, and refreshed monthly when some are missing, since Wikidata entries can gain ids later.
 

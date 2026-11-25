@@ -122,6 +122,7 @@ export async function lookupIds(fetcher, ref, type) {
     released: releaseDate(entity),
     apple: appleMovie ? { id: appleMovie, kind: 'movie' } : appleShow ? { id: appleShow, kind: 'show' } : null,
     rottenTomatoes: firstString(entity, 'P1258', /^(m|tv)\/[\w-]+$/) ?? null,
-    filmweb: firstString(entity, 'P5032', NUMERIC_ID) ?? null
+    filmweb: firstString(entity, 'P5032', NUMERIC_ID) ?? null,
+    allocine: type === 'series' ? null : (firstString(entity, 'P1265', NUMERIC_ID) ?? null)
   };
 }

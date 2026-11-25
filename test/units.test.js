@@ -310,3 +310,71 @@ test('media ids are parsed with their wikidata property', async () => {
   assert.equal(parseMediaId('mal:5114', 'series'), null);
   assert.equal(parseMediaId('%E0%A4%A', 'movie'), null);
 });
+
+test('webedia versions are classified per site', async () => {
+  const { WEBEDIA_SITES, versionLanguage } = await import('../src/providers/webedia.js');
+  const cases = [
+    ['fr', 'Oppenheimer Bande-annonce VF', 'fr'],
+    ['fr', 'Oppenheimer Bande-annonce VOST', 'fr'],
+    ['fr', 'Oppenheimer Bande-annonce (2) VO', 'en'],
+    ['de', 'Oppenheimer Trailer (2) DF', 'de'],
+    ['de', 'Oppenheimer Trailer (3) OV', 'en'],
+    ['es', 'Oppenheimer Tráiler (2)', 'es'],
+    ['es', 'Oppenheimer Teaser VO', 'en'],
+    ['pt', 'Oppenheimer Trailer Legendado', 'pt'],
+    ['pt', 'Divertida Mente 2 Teaser Trailer Dublado', 'pt'],
+    ['pt', 'Oppenheimer Teaser Original', 'en'],
+    ['pt', 'Duna: Parte 2 Trailer Oficial', 'en'],
+    ['tr', 'Ters Yüz 2 Dublajlı Fragman', 'tr'],
+    ['tr', 'Oppenheimer Altyazılı Fragman', 'tr'],
+    ['tr', 'Oppenheimer Fragman', 'en']
+  ];
+  for (const [language, name, expected] of cases) {
+    assert.equal(versionLanguage(WEBEDIA_SITES[language], name, language, 'en'), expected, `${language}: ${name}`);
+  }
+  assert.equal(versionLanguage(WEBEDIA_SITES.fr, 'Bande-annonce VO', 'fr', null), null);
+});
+
+test('webedia trailers are read from the listing and video pages', async () => {
+  const { webediaTrailers } = await import('../src/providers/webedia.js');
+  const { fakeFetcher } = await import('./helpers.js');
+  const page = (name, file, duration = 'PT00H02M03S') =>
+    `<script type="application/ld+json">${JSON.stringify({
+      '@type': 'VideoObject',
+      name,
+      contentUrl: file ? `https://fr.vid.web.acsta.net/nmedia/${file}.mp4?source=www` : '',
+      thumbnailUrl: 'https://fr.web.img6.acsta.net/thumb.jpg',
+      duration
+    })}</script>`;
+  const fetcher = fakeFetcher([
+    [
+      'https://www.allocine.fr/videos/fichefilm-296168/toutes/',
+      ['1', '2', '3', '4', '1'].map(id => `<a href="/video/player_gen_cmedia=${id}&amp;cfilm=296168.html">x</a>`).join('')
+    ],
+    ['https://www.allocine.fr/video/player_gen_cmedia=1&cfilm=296168.html', page('Oppenheimer Bande-annonce VO', 'a')],
+    ['https://www.allocine.fr/video/player_gen_cmedia=2&cfilm=296168.html', page('Oppenheimer Bande-annonce VF', 'b')],
+    ['https://www.allocine.fr/video/player_gen_cmedia=3&cfilm=296168.html', page('Oppenheimer Teaser VF', '')],
+    ['https://www.allocine.fr/video/player_gen_cmedia=4&cfilm=296168.html', page('Oppenheimer Interview', 'd')]
+  ]);
+  const trailers = await webediaTrailers(fetcher, { allocine: '296168', originalLanguage: 'en' }, 'fr');
+  assert.deepEqual(
+    trailers.map(t => [t.source, t.title, t.lang, t.kind, t.durationSec]),
+    [
+      ['allocine', 'Oppenheimer Bande-annonce VF', 'fr', 'trailer', 123],
+      ['allocine', 'Oppenheimer Bande-annonce VO', 'en', 'trailer', 123]
+    ]
+  );
+  assert.equal(trailers[0].thumbnail, 'https://fr.web.img6.acsta.net/thumb.jpg');
+  assert.deepEqual(await webediaTrailers(fetcher, { allocine: '296168', originalLanguage: 'en' }, 'pl'), []);
+});
+
+test('direct trailers always come before youtube ones in the same language', () => {
+  const result = selectTrailers(
+    [
+      trailer({ title: 'youtube trailer', source: 'youtube', height: null, ytId: 'aaaaaaaaaaa', url: undefined }),
+      trailer({ title: 'direct teaser', source: 'sensacine', height: null, kind: 'teaser', durationSec: 40 })
+    ],
+    ['en']
+  );
+  assert.deepEqual(result.map(item => item.title), ['direct teaser', 'youtube trailer']);
+});

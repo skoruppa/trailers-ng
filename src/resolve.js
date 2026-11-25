@@ -5,12 +5,14 @@ import { plexTrailers } from './providers/plex.js';
 import { rottenTomatoesTrailers } from './providers/rottentomatoes.js';
 import { lookupIds } from './providers/wikidata.js';
 import { cinemetaTrailers, tmdbTrailers } from './providers/youtube.js';
+import { WEBEDIA_SITES, webediaTrailers } from './providers/webedia.js';
 import { selectTrailers } from './select.js';
 
 const HOUR = 60 * 60;
 const DAY = 24 * HOUR;
 const RECENT_DAYS = 180;
 const ENOUGH_DIRECT_TRAILERS = 2;
+const MAX_YOUTUBE_TRAILERS = 4;
 
 export function isRecent(released, now = Date.now()) {
   const time = released ? Date.parse(released) : NaN;
@@ -58,7 +60,7 @@ export function appleTrailers(preview, languages, storefront, apple, origin) {
 
 export async function resolveTrailers({ fetcher, cached, waitUntil, ref, type, config, origin, tmdbApiKey, plexToken }) {
   const options = { waitUntil };
-  const ids = await cached(`ids:v3:${type}:${ref.key}`, idsPolicy, () => lookupIds(fetcher, ref, type), options).catch(() => null);
+  const ids = await cached(`ids:v4:${type}:${ref.key}`, idsPolicy, () => lookupIds(fetcher, ref, type), options).catch(() => null);
   const imdbId = ids?.imdbId ?? ref.imdbId ?? null;
   const tmdbId = ids?.tmdbId ?? ref.tmdbId ?? null;
   const preferred = config.lang;
@@ -82,6 +84,11 @@ export async function resolveTrailers({ fetcher, cached, waitUntil, ref, type, c
       )
     );
   }
+  if (WEBEDIA_SITES[preferred] && ids?.allocine) {
+    tasks.push(
+      cached(`webedia:v1:${preferred}:${ids.allocine}`, policy, () => webediaTrailers(fetcher, ids, preferred), options)
+    );
+  }
   if (ids?.apple) {
     for (const language of languages) {
       const storefront = storefrontFor(language);
@@ -102,13 +109,15 @@ export async function resolveTrailers({ fetcher, cached, waitUntil, ref, type, c
 
   const preferredDirect = selectTrailers(direct, [preferred]);
   const preferredYoutube =
-    preferredDirect.length >= ENOUGH_DIRECT_TRAILERS ? [] : youtube.filter(trailer => trailer.lang === preferred);
+    preferredDirect.length >= ENOUGH_DIRECT_TRAILERS
+      ? []
+      : youtube.filter(trailer => trailer.lang === preferred).slice(0, MAX_YOUTUBE_TRAILERS);
   const preferredList = selectTrailers([...direct, ...withOrder([preferredYoutube])], [preferred]);
   if (preferredList.length || !useEnglish) return { title, trailers: preferredList };
 
   const englishDirect = selectTrailers(direct, ['en']);
   if (englishDirect.length) return { title, trailers: englishDirect };
-  const englishYoutube = youtube.filter(trailer => trailer.lang === 'en');
+  const englishYoutube = youtube.filter(trailer => trailer.lang === 'en').slice(0, MAX_YOUTUBE_TRAILERS);
   return { title, trailers: selectTrailers(withOrder([englishYoutube]), ['en']) };
 }
 

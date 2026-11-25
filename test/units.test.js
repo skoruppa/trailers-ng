@@ -378,3 +378,22 @@ test('direct trailers always come before youtube ones in the same language', () 
   );
   assert.deepEqual(result.map(item => item.title), ['direct teaser', 'youtube trailer']);
 });
+
+test('mubi trailers are kept only in the requested language', async () => {
+  const { mubiFilmToTrailer, trailerLanguage } = await import('../src/providers/mubi.js');
+  const film = lang => ({
+    trailer_url: `https://trailers.mubicdn.net/317388/optimised/720p-t-oppenheimer-2022_${lang}_1507.238_1280_720_1671412979.mp4`,
+    optimised_trailers: [
+      { profile: '240p', url: `https://trailers.mubicdn.net/317388/optimised/240p-t-oppenheimer-2022_${lang}_1507.238_1280_720_1671412979.mp4` },
+      { profile: '720p', url: `https://trailers.mubicdn.net/317388/optimised/720p-t-oppenheimer-2022_${lang}_1507.238_1280_720_1671412979.mp4` }
+    ],
+    stills: { retina: 'https://assets.mubicdn.net/images/film/317388/image-w1280.jpg' }
+  });
+  assert.equal(trailerLanguage(film('fr_fr').trailer_url), 'fr');
+  const french = mubiFilmToTrailer(film('fr_fr'), 'fr');
+  assert.equal(french.height, 720);
+  assert.match(french.url, /720p-.*_fr_fr_/);
+  assert.equal(french.thumbnail, 'https://assets.mubicdn.net/images/film/317388/image-w1280.jpg');
+  assert.equal(mubiFilmToTrailer(film('en_us'), 'pl'), null);
+  assert.equal(mubiFilmToTrailer({}, 'fr'), null);
+});

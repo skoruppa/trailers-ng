@@ -6,6 +6,7 @@ import { rottenTomatoesTrailers } from './providers/rottentomatoes.js';
 import { lookupIds } from './providers/wikidata.js';
 import { cinemetaTrailers, tmdbTrailers } from './providers/youtube.js';
 import { WEBEDIA_SITES, webediaTrailers } from './providers/webedia.js';
+import { mubiTrailer } from './providers/mubi.js';
 import { selectTrailers } from './select.js';
 
 const HOUR = 60 * 60;
@@ -60,7 +61,7 @@ export function appleTrailers(preview, languages, storefront, apple, origin) {
 
 export async function resolveTrailers({ fetcher, cached, waitUntil, ref, type, config, origin, tmdbApiKey, plexToken }) {
   const options = { waitUntil };
-  const ids = await cached(`ids:v4:${type}:${ref.key}`, idsPolicy, () => lookupIds(fetcher, ref, type), options).catch(() => null);
+  const ids = await cached(`ids:v5:${type}:${ref.key}`, idsPolicy, () => lookupIds(fetcher, ref, type), options).catch(() => null);
   const imdbId = ids?.imdbId ?? ref.imdbId ?? null;
   const tmdbId = ids?.tmdbId ?? ref.tmdbId ?? null;
   const preferred = config.lang;
@@ -88,6 +89,11 @@ export async function resolveTrailers({ fetcher, cached, waitUntil, ref, type, c
     tasks.push(
       cached(`webedia:v1:${preferred}:${ids.allocine}`, policy, () => webediaTrailers(fetcher, ids, preferred), options)
     );
+  }
+  if (ids?.mubi) {
+    for (const language of languages) {
+      tasks.push(cached(`mubi:v1:${language}:${ids.mubi}`, policy, () => mubiTrailer(fetcher, ids.mubi, language), options));
+    }
   }
   if (ids?.apple) {
     for (const language of languages) {

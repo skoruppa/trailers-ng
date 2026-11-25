@@ -22,6 +22,7 @@ It is meant to be used as a trailer source for a metadata addon such as AIOMetad
 | Rotten Tomatoes (Fandango) | English | Titles, descriptions, thumbnails, durations |
 | Apple TV | Depends on the title | Uses the storefront of the chosen language. Some trailers carry many dubbed audio tracks; the addon serves a playlist with only the chosen language |
 | Filmweb | Polish | Polish trailers |
+| MUBI | Depends on the country | One trailer per country version, for example French or German; kept only when the file is in the requested language |
 | AlloCiné, Filmstarts, SensaCine, AdoroCinema, Beyazperde | French, German, Spanish, Portuguese, Turkish | The Webedia sites share one id. Dubbed and subtitled versions count as the site's language, original versions as the film's original language. Movies only |
 
 Titles are matched by IMDb id (`tt…`) or TMDB id (`tmdb:…`); TMDB ids are mapped through Wikidata. Note that AIOMetadata only asks trailer addons by IMDb id. YouTube trailers are added after the direct files, at most four per language. Plex is queried by IMDb id directly; the ids of the other services come from Wikidata (through Wikidata Hub and `Special:EntityData`). Wikidata requests go through a queue: at most 2 at a time and 4 per second, and a request that waits longer than 4 seconds is dropped for that lookup.

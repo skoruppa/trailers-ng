@@ -6,6 +6,7 @@ const SOURCE_LABELS = {
   filmstarts: 'Filmstarts',
   sensacine: 'SensaCine',
   filmweb: 'Filmweb',
+  mubi: 'MUBI',
   plex: 'Plex',
   rottentomatoes: 'Rotten Tomatoes',
   youtube: 'YouTube'

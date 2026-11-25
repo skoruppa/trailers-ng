@@ -7,6 +7,7 @@ const SOURCE_PRIORITY = {
   beyazperde: 0,
   apple: 1,
   plex: 2,
+  mubi: 2,
   rottentomatoes: 3,
   youtube: 8
 };

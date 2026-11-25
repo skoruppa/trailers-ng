@@ -1,0 +1,21 @@
+{
+  "name": "trailers-ng",
+  "version": "0.1.0",
+  "description": "Stremio, Nuvio and Fusion addon with direct trailer streams",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/worker.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "check:live": "node scripts/live-check.js",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
